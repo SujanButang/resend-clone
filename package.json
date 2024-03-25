@@ -8,6 +8,11 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "three": "0.154.0",
+    "@tweenjs/tween.js": "18.5.0",
+    "postprocessing": "6.32.2"
+  },
   "devDependencies": {
     "vite": "^5.1.6"
   }
