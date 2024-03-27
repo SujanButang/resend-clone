@@ -122,21 +122,54 @@ function constructScene() {
   // Create the scene
   const scene = new THREE.Scene();
 
-  // Create the light
-  RectAreaLightUniformsLib.init();
-  const rectLight1 = new THREE.RectAreaLight(0xffffff, 100, 20, 20);
-  rectLight1.position.set(10, 15, 0);
-  rectLight1.rotation.x = Math.PI * 1.5;
-  rectLight1.rotation.y = Math.PI / 4;
-  scene.add(rectLight1);
+  // Create the ambient light
+  const ambientLight = new THREE.AmbientLight(0x404040);
+  scene.add(ambientLight);
 
-  const rectLight2 = new THREE.RectAreaLight(0xffffff, 5, 20, 20);
-  rectLight2.position.set(0, -20, 0);
-  rectLight2.rotation.x = Math.PI / 2;
-  scene.add(rectLight2);
+  // Create point lights
+  const pointLight1 = new THREE.PointLight(0xffffff, 1);
+  pointLight1.position.set(5, 5, 5);
+  scene.add(pointLight1);
 
-  scene.add(new RectAreaLightHelper(rectLight1));
-  scene.add(new RectAreaLightHelper(rectLight2));
+  const pointLight2 = new THREE.PointLight(0xffffff, 1);
+  pointLight2.position.set(-5, -5, 5);
+  scene.add(pointLight2);
+
+  const pointLight3 = new THREE.PointLight(0xffffff, 1);
+  pointLight3.position.set(5, -5, -5);
+  scene.add(pointLight3);
+
+  const pointLight4 = new THREE.PointLight(0xffffff, 1);
+  pointLight4.position.set(-5, 5, -5);
+  scene.add(pointLight4);
+
+  let light, light2;
+  const isMobileSafari =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !/GSA/i.test(navigator.userAgent);
+
+  if (isMobileSafari) {
+    // Use a fallback light type for mobile Safari
+    light = new THREE.PointLight(0xffffff, 1, 100);
+    light.position.set(10, 15, 0);
+
+    light2 = new THREE.PointLight(0xffffff, 1, 100);
+    light2.position.set(0, -20, 0);
+  } else {
+    // Use RectAreaLight for other browsers
+    RectAreaLightUniformsLib.init();
+    light = new THREE.RectAreaLight(0xffffff, 100, 20, 20);
+    light.position.set(10, 15, 0);
+    light.rotation.x = Math.PI * 1.5;
+    light.rotation.y = Math.PI / 4;
+
+    light2 = new THREE.RectAreaLight(0xffffff, 5, 20, 20);
+    light2.position.set(0, -20, 0);
+    light2.rotation.x = Math.PI / 2;
+  }
+
+  scene.add(light);
+  scene.add(light2);
 
   // Create a cube
   const cube = makeCubes();
