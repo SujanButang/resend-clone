@@ -253,6 +253,9 @@ function addRendering() {
   if (window.innerWidth <= 768) {
     // For mobile devices
     composer.setSize(200, 200);
+  } else if (window.innerWidth <= 768) {
+    // For tablet devices
+    composer.setSize(300, 300);
   } else {
     // For desktop
     composer.setSize(600, 600);
