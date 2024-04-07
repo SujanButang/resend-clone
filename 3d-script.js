@@ -17,38 +17,55 @@ function toRadians(angle) {
   return angle * (Math.PI / 180);
 }
 
-function createBoxWithRoundedEdges(width, height, depth, radius0, smoothness) {
+function createExtrudeGeometry() {
+  const width = 1;
+  const height = 1;
+
   let shape = new THREE.Shape();
-  let eps = 0.00001;
-  let radius = radius0 - eps;
-  shape.absarc(eps, eps, eps, -Math.PI / 2, -Math.PI, true);
-  shape.absarc(eps, height - radius * 2, eps, Math.PI, Math.PI / 2, true);
+  let epsilon = 0.000025;
+  let radius = 0.01 - epsilon;
+  shape.absarc(epsilon, epsilon, epsilon, -Math.PI / 2, -Math.PI, true);
+  shape.absarc(
+    epsilon,
+    height - radius * 2,
+    epsilon,
+    Math.PI,
+    Math.PI / 2,
+    true
+  );
   shape.absarc(
     width - radius * 2,
     height - radius * 2,
-    eps,
+    epsilon,
     Math.PI / 2,
     0,
     true
   );
-  shape.absarc(width - radius * 2, eps, eps, 0, -Math.PI / 2, true);
-  let geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: depth - radius0 * 2,
-    bevelEnabled: true,
-    bevelSegments: smoothness * 2,
-    steps: 1,
-    bevelSize: radius,
-    bevelThickness: radius0,
-    curveSegments: smoothness,
-  });
+  shape.absarc(width - radius * 2, epsilon, epsilon, 0, -Math.PI / 2, true);
 
-  geometry.center();
+  const extrudeSettings = {
+    stepsilon: 24,
+    depth: 0.8,
+    bevelThickness: 0.2,
+    bevelSize: 0.1,
+    bevelOffset: 0,
+    bevelSegments: 64,
+    curveSegments: 32
+  };
 
-  return geometry;
+  const extrudeGeomentry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  extrudeGeomentry.center();
+
+  return extrudeGeomentry;
 }
 
 function makeCubes() {
   const material = new THREE.MeshStandardMaterial({
+    // color: 'black',
+    // metalness: 1,
+    // side: THREE.DoubleSide,
+    // roughness: 0.21,  
+
     color: 0x000000,
     metalness: 1,
     roughness: 0.01,
@@ -63,7 +80,7 @@ function makeCubes() {
     const layer = new THREE.Object3D();
     for (let j = 0; j < numCubes; j++) {
       for (let k = 0; k < numCubes; k++) {
-        const geom = createBoxWithRoundedEdges(1.2, 1.2, 1.3, 0.2, 20);
+        const geom = createExtrudeGeometry();
         const x = (i - offset) * 1.2;
         const y = (j - offset) * 1.2;
         const z = (k - offset) * 1.2;
@@ -144,32 +161,53 @@ function constructScene() {
   scene.add(pointLight4);
 
   let light, light2;
-  const isMobileSafari =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-    !/GSA/i.test(navigator.userAgent);
 
-  if (isMobileSafari) {
-    // Use a fallback light type for mobile Safari
-    light = new THREE.PointLight(0xffffff, 1, 100);
-    light.position.set(10, 15, 0);
+const lights = {
+  orbiting: null,
+  xAxis: null,
+  yAxis: null,
+  front: null,
+  back: null
+};
 
-    light2 = new THREE.PointLight(0xffffff, 1, 100);
-    light2.position.set(0, -20, 0);
-  } else {
-    // Use RectAreaLight for other browsers
-    RectAreaLightUniformsLib.init();
-    light = new THREE.RectAreaLight(0xffffff, 100, 20, 20);
-    light.position.set(10, 15, 0);
-    light.rotation.x = Math.PI * 1.5;
-    light.rotation.y = Math.PI / 4;
+  const orbitingSpotLight = new THREE.SpotLight("white");
+  orbitingSpotLight.intensity = 4400;
+  orbitingSpotLight.angle = Math.PI / 4;
+  orbitingSpotLight.position.set(2, -2, 12);
+  orbitingSpotLight.penumbra = 0.7;
+  orbitingSpotLight.decay = 1.1;
+  scene.add(orbitingSpotLight);
+  lights.orbiting = orbitingSpotLight;
 
-    light2 = new THREE.RectAreaLight(0xffffff, 5, 20, 20);
-    light2.position.set(0, -20, 0);
-    light2.rotation.x = Math.PI / 2;
-  }
+  const spotLightYAxis = new THREE.SpotLight("white");
+  spotLightYAxis.intensity = 6500;
+  spotLightYAxis.angle = Math.PI / 3;
+  spotLightYAxis.position.set(10, 0, -3);
+  scene.add(spotLightYAxis);
+  lights.yAxis = spotLightYAxis;
 
-  scene.add(light);
-  scene.add(light2);
+  const spotLightXAxis = new THREE.SpotLight("white");
+  spotLightXAxis.intensity = 3300;
+  spotLightXAxis.angle = Math.PI / 2;
+  spotLightXAxis.position.set(0, 10, 0);
+  scene.add(spotLightXAxis);
+  lights.xAxis = spotLightXAxis;
+
+
+  const frontIllumination = new THREE.SpotLight("white");
+  frontIllumination.intensity = 6300;
+  frontIllumination.angle = Math.PI / 4;
+  frontIllumination.position.set(2, -1, 12);
+  scene.add(frontIllumination);
+  lights.front = frontIllumination;
+
+  const backIllumination = new THREE.SpotLight("white");
+  backIllumination.intensity = 6300;
+  backIllumination.angle = Math.PI / 4;
+  backIllumination.position.set(4, 5, -22);
+  scene.add(backIllumination);
+  lights.back = backIllumination;
+
 
   // Create a cube
   const cube = makeCubes();
